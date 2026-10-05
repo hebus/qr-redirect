@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Redirection...</title>
+</head>
+<body>
+    <div style="font-family: sans-serif; text-align: center; margin-top: 50px;">
+        <p id="message">Redirection en cours vers l'application...</p>
+        <p id="fallback-wrapper" hidden>Si la page ne se charge pas, <a id="fallback" href="#">cliquez ici</a>.</p>
+    </div>
+    <script>
+        // Les cibles sont définies dans redirects.json : { "slug": "https://..." }
+        // Usage : https://<pseudo>.github.io/qr-redirect/?r=<slug>
+        const slug = new URLSearchParams(window.location.search).get('r');
+        const message = document.getElementById('message');
+
+        fetch('redirects.json', { cache: 'no-store' })
+            .then(response => {
+                if (!response.ok) throw new Error('redirects.json introuvable');
+                return response.json();
+            })
+            .then(redirects => {
+                const target = Object.hasOwn(redirects, slug) ? redirects[slug] : null;
+                if (!target) {
+                    message.textContent = 'Lien de redirection inconnu.';
+                    return;
+                }
+                document.getElementById('fallback').href = target;
+                document.getElementById('fallback-wrapper').hidden = false;
+                window.location.replace(target);
+            })
+            .catch(() => {
+                message.textContent = 'Impossible de charger la redirection.';
+            });
+    </script>
+</body>
+</html>
